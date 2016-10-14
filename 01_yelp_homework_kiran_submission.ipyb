@@ -1,0 +1,1115 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Homework with Yelp reviews data"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Introduction\n",
+    "\n",
+    "This assignment uses a small subset of the data from Kaggle's [Yelp Business Rating Prediction](https://www.kaggle.com/c/yelp-recsys-2013) competition.\n",
+    "\n",
+    "**Description of the data:**\n",
+    "\n",
+    "- **`yelp.csv`** contains the dataset. It is stored in the course repository (in the **`data`** directory), so there is no need to download anything from the Kaggle website.\n",
+    "- Each observation (row) in this dataset is a review of a particular business by a particular user.\n",
+    "- The **stars** column is the number of stars (1 through 5) assigned by the reviewer to the business. (Higher stars is better.) In other words, it is the rating of the business by the person who wrote the review.\n",
+    "- The **text** column is the text of the review.\n",
+    "\n",
+    "**Goal:** Predict the star rating of a review using **only** the review text.\n",
+    "\n",
+    "**Tip:** After each task, I recommend that you check the shape and the contents of your objects, to confirm that they match your expectations."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Task 1\n",
+    "\n",
+    "Read **`yelp.csv`** into a Pandas DataFrame and examine it."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "import pandas as pd"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 22,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Index               80\n",
+      "business_id     790000\n",
+      "date            670000\n",
+      "review_id       790000\n",
+      "stars            80000\n",
+      "text           7715093\n",
+      "type            630000\n",
+      "user_id         790000\n",
+      "cool             80000\n",
+      "useful           80000\n",
+      "funny            80000\n",
+      "dtype: int64\n"
+     ]
+    },
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>business_id</th>\n",
+       "      <th>date</th>\n",
+       "      <th>review_id</th>\n",
+       "      <th>stars</th>\n",
+       "      <th>text</th>\n",
+       "      <th>type</th>\n",
+       "      <th>user_id</th>\n",
+       "      <th>cool</th>\n",
+       "      <th>useful</th>\n",
+       "      <th>funny</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>9yKzy9PApeiPPOUJEtnvkg</td>\n",
+       "      <td>2011-01-26</td>\n",
+       "      <td>fWKvX83p0-ka4JS3dc6E5A</td>\n",
+       "      <td>5</td>\n",
+       "      <td>My wife took me here on my birthday for breakf...</td>\n",
+       "      <td>review</td>\n",
+       "      <td>rLtl8ZkDX5vH5nAx9C3q5Q</td>\n",
+       "      <td>2</td>\n",
+       "      <td>5</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>ZRJwVLyzEJq1VAihDhYiow</td>\n",
+       "      <td>2011-07-27</td>\n",
+       "      <td>IjZ33sJrzXqU-0X6U8NwyA</td>\n",
+       "      <td>5</td>\n",
+       "      <td>I have no idea why some people give bad review...</td>\n",
+       "      <td>review</td>\n",
+       "      <td>0a2KyEL0d3Yb1V6aivbIuQ</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>6oRAC4uyJCsJl1X0WZpVSA</td>\n",
+       "      <td>2012-06-14</td>\n",
+       "      <td>IESLBzqUCLdSzSqm0eCSxQ</td>\n",
+       "      <td>4</td>\n",
+       "      <td>love the gyro plate. Rice is so good and I als...</td>\n",
+       "      <td>review</td>\n",
+       "      <td>0hT2KtfLiobPvh6cDC8JQg</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>_1QQZuf4zZOyFCvXc0o6Vg</td>\n",
+       "      <td>2010-05-27</td>\n",
+       "      <td>G-WvGaISbqqaMHlNnByodA</td>\n",
+       "      <td>5</td>\n",
+       "      <td>Rosie, Dakota, and I LOVE Chaparral Dog Park!!...</td>\n",
+       "      <td>review</td>\n",
+       "      <td>uZetl9T0NcROGOyFfughhg</td>\n",
+       "      <td>1</td>\n",
+       "      <td>2</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>6ozycU1RpktNG2-1BroVtw</td>\n",
+       "      <td>2012-01-05</td>\n",
+       "      <td>1uJFq2r5QfJG_6ExMRCaGw</td>\n",
+       "      <td>5</td>\n",
+       "      <td>General Manager Scott Petello is a good egg!!!...</td>\n",
+       "      <td>review</td>\n",
+       "      <td>vYmM4KTsC8ZfQBg-j5MWkw</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "              business_id        date               review_id  stars  \\\n",
+       "0  9yKzy9PApeiPPOUJEtnvkg  2011-01-26  fWKvX83p0-ka4JS3dc6E5A      5   \n",
+       "1  ZRJwVLyzEJq1VAihDhYiow  2011-07-27  IjZ33sJrzXqU-0X6U8NwyA      5   \n",
+       "2  6oRAC4uyJCsJl1X0WZpVSA  2012-06-14  IESLBzqUCLdSzSqm0eCSxQ      4   \n",
+       "3  _1QQZuf4zZOyFCvXc0o6Vg  2010-05-27  G-WvGaISbqqaMHlNnByodA      5   \n",
+       "4  6ozycU1RpktNG2-1BroVtw  2012-01-05  1uJFq2r5QfJG_6ExMRCaGw      5   \n",
+       "\n",
+       "                                                text    type  \\\n",
+       "0  My wife took me here on my birthday for breakf...  review   \n",
+       "1  I have no idea why some people give bad review...  review   \n",
+       "2  love the gyro plate. Rice is so good and I als...  review   \n",
+       "3  Rosie, Dakota, and I LOVE Chaparral Dog Park!!...  review   \n",
+       "4  General Manager Scott Petello is a good egg!!!...  review   \n",
+       "\n",
+       "                  user_id  cool  useful  funny  \n",
+       "0  rLtl8ZkDX5vH5nAx9C3q5Q     2       5      0  \n",
+       "1  0a2KyEL0d3Yb1V6aivbIuQ     0       0      0  \n",
+       "2  0hT2KtfLiobPvh6cDC8JQg     0       1      0  \n",
+       "3  uZetl9T0NcROGOyFfughhg     1       2      0  \n",
+       "4  vYmM4KTsC8ZfQBg-j5MWkw     0       0      0  "
+      ]
+     },
+     "execution_count": 22,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "yelp = pd.read_csv('../data/yelp.csv')\n",
+    "print(yelp.memory_usage(deep=True))\n",
+    "yelp = pd.read_csv('../data/yelp.csv', dtype={'cool':int, 'useful': int, 'funny': int, 'stars': int, 'business_id': str})\n",
+    "#yelp = pd.read_csv('../data/yelp.csv', dtype=dict.fromkeys(('cool', 'useful', 'funny', 'stars'), int))\n",
+    "\n",
+    "yelp.head()\n",
+    "# print(yelp.dtypes)\n",
+    "# yelp.memory_usage(deep=True)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Task 2\n",
+    "\n",
+    "Create a new DataFrame that only contains the **5-star** and **1-star** reviews.\n",
+    "\n",
+    "- **Hint:** [How do I apply multiple filter criteria to a pandas DataFrame?](https://www.youtube.com/watch?v=YPItfQ87qjM&list=PL5-da3qGB5ICCsgW1MxlZ0Hq8LL5U3u9y&index=9) explains how to do this."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 28,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": [
+    "yelp = yelp[yelp.stars.isin([1,5])]"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Task 3\n",
+    "\n",
+    "Define X and y from the new DataFrame, and then split X and y into training and testing sets, using the **review text** as the only feature and the **star rating** as the response.\n",
+    "\n",
+    "- **Hint:** Keep in mind that X should be a Pandas Series (not a DataFrame), since we will pass it to CountVectorizer in the task that follows."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 33,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "((4086,), (4086,))"
+      ]
+     },
+     "execution_count": 33,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "X = yelp.text\n",
+    "y = yelp.stars\n",
+    "X.shape, y.shape"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 41,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "((2860,), (1226,))"
+      ]
+     },
+     "execution_count": 41,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "from sklearn.cross_validation import train_test_split\n",
+    "X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=1)\n",
+    "X_train.shape, X_test.shape"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Task 4\n",
+    "\n",
+    "Use CountVectorizer to create **document-term matrices** from X_train and X_test."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "from sklearn.feature_extraction.text import CountVectorizer\n",
+    "CV = CountVectorizer()\n",
+    "CV.fit(X_train)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 61,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": [
+    "# CV.get_feature_names()\n",
+    "dtm_train = CV.transform(X_train)\n",
+    "dtm_train.shape\n",
+    "df_train = pd.DataFrame(dtm_train.toarray(), columns=CV.get_feature_names())"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 190,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "(1226, 10506)"
+      ]
+     },
+     "execution_count": 190,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# df_train.sum(axis='index')\n",
+    "dtm_test = CV.transform(X_test)\n",
+    "dtm_test.shape"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 186,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "((2860, 10506), (1226, 10506))"
+      ]
+     },
+     "execution_count": 186,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "dtm_train.shape, dtm_test.shape"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Task 5\n",
+    "\n",
+    "Use Multinomial Naive Bayes to **predict the star rating** for the reviews in the testing set, and then **calculate the accuracy** and **print the confusion matrix**.\n",
+    "\n",
+    "- **Hint:** [Evaluating a classification model](https://github.com/justmarkham/scikit-learn-videos/blob/master/09_classification_metrics.ipynb) explains how to interpret both classification accuracy and the confusion matrix."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 70,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Wall time: 6 ms\n"
+     ]
+    }
+   ],
+   "source": [
+    "from sklearn.naive_bayes import MultinomialNB \n",
+    "nb = MultinomialNB()\n",
+    "%time nb.fit(dtm_train, y_train)\n",
+    "predictions = nb.predict(dtm_test)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 94,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "yelp prediction model accuracy is 0.9004893964110929\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "array([[190,  33],\n",
+       "       [ 89, 914]])"
+      ]
+     },
+     "execution_count": 94,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "from sklearn import metrics\n",
+    "print('yelp prediction model accuracy is {}'.format(metrics.accuracy_score(y_test, predictions)))\n",
+    "confusion = metrics.confusion_matrix(y_test, predictions)\n",
+    "confusion"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Task 6 (Challenge)\n",
+    "\n",
+    "Calculate the **null accuracy**, which is the classification accuracy that could be achieved by always predicting the most frequent class.\n",
+    "\n",
+    "- **Hint:** [Evaluating a classification model](https://github.com/justmarkham/scikit-learn-videos/blob/master/09_classification_metrics.ipynb) explains null accuracy and demonstrates two ways to calculate it, though only one of those ways will work in this case. Alternatively, you can come up with your own method to calculate null accuracy!"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 91,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "null accuracy: 0.81810766721\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "array([ 0.81810767])"
+      ]
+     },
+     "execution_count": 91,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "y_test.value_counts()\n",
+    "#since the ratings are not binary, use this formula to calculate null accuracy\n",
+    "null_accuracy = y_test.value_counts().head(1)/len(y_test)\n",
+    "print('null accuracy:', null_accuracy.values[0])"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Task 7 (Challenge)\n",
+    "\n",
+    "Browse through the review text of some of the **false positives** and **false negatives**. Based on your knowledge of how Naive Bayes works, do you have any ideas about why the model is incorrectly classifying these reviews?\n",
+    "\n",
+    "- **Hint:** [Evaluating a classification model](https://github.com/justmarkham/scikit-learn-videos/blob/master/09_classification_metrics.ipynb) explains the definitions of \"false positives\" and \"false negatives\".\n",
+    "- **Hint:** Think about what a false positive means in this context, and what a false negative means in this context. What has scikit-learn defined as the \"positive class\"?"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 111,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "false positives are  33\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "1781    If you like the stuck up Scottsdale vibe this ...\n",
+       "321     My wife and I live around the corner, hadn't e...\n",
+       "Name: text, dtype: object"
+      ]
+     },
+     "execution_count": 111,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# X_test[y_test > predictions]\n",
+    "print('false positives are ', confusion[0,1])\n",
+    "(y_test < predictions).sum()\n",
+    "FP = X_test[y_test < predictions]\n",
+    "FP[0:2]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 125,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "False Positive: for index value 1781 model predicted falsy predicted rating 1\n"
+     ]
+    }
+   ],
+   "source": [
+    "sample = FP.index[0]\n",
+    "X_test[sample]\n",
+    "y_test[sample]\n",
+    "print('False Positive: for index value {} model predicted falsy predicted rating {}'.format(sample, y_test[sample]))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Task 8 (Challenge)\n",
+    "\n",
+    "Calculate which 10 tokens are the most predictive of **5-star reviews**, and which 10 tokens are the most predictive of **1-star reviews**.\n",
+    "\n",
+    "- **Hint:** Naive Bayes automatically counts the number of times each token appears in each class, as well as the number of observations in each class. You can access these counts via the `feature_count_` and `class_count_` attributes of the Naive Bayes model object."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 158,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "(2, 10506)\n",
+      "[  526.  2334.]\n",
+      "(4086,)\n",
+      "(2860,)\n"
+     ]
+    },
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>rating_1</th>\n",
+       "      <th>rating_5</th>\n",
+       "      <th>tokens</th>\n",
+       "      <th>ratio</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>9374</th>\n",
+       "      <td>7.351711</td>\n",
+       "      <td>5.594259</td>\n",
+       "      <td>the</td>\n",
+       "      <td>0.760947</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "      rating_1  rating_5 tokens     ratio\n",
+       "9374  7.351711  5.594259    the  0.760947"
+      ]
+     },
+     "execution_count": 158,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "feature_count = nb.feature_count_\n",
+    "print(feature_count.shape)\n",
+    "print(nb.class_count_)\n",
+    "print(X.shape)\n",
+    "print(X_train.shape)\n",
+    "nb.classes_\n",
+    "df_analysis = pd.DataFrame({'tokens': CV.get_feature_names(), 'rating_1': feature_count[0, : ], 'rating_5': feature_count[1, :]})\n",
+    "df_analysis.rating_1 += 1\n",
+    "df_analysis.rating_5 += 1\n",
+    "df_analysis.rating_1 /= nb.class_count_[0]\n",
+    "df_analysis.rating_5 /= nb.class_count_[1]\n",
+    "\n",
+    "df_analysis['ratio'] = df_analysis.rating_5/df_analysis.rating_1\n",
+    "df_analysis[df_analysis.tokens == 'the']"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 156,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>rating_1</th>\n",
+       "      <th>rating_5</th>\n",
+       "      <th>tokens</th>\n",
+       "      <th>ratio</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>3529</th>\n",
+       "      <td>0.003802</td>\n",
+       "      <td>0.077121</td>\n",
+       "      <td>fantastic</td>\n",
+       "      <td>20.282776</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>6849</th>\n",
+       "      <td>0.005703</td>\n",
+       "      <td>0.097258</td>\n",
+       "      <td>perfect</td>\n",
+       "      <td>17.052556</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>10469</th>\n",
+       "      <td>0.001901</td>\n",
+       "      <td>0.024422</td>\n",
+       "      <td>yum</td>\n",
+       "      <td>12.845758</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>6580</th>\n",
+       "      <td>0.001901</td>\n",
+       "      <td>0.019709</td>\n",
+       "      <td>outstanding</td>\n",
+       "      <td>10.366752</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3560</th>\n",
+       "      <td>0.013308</td>\n",
+       "      <td>0.137104</td>\n",
+       "      <td>favorite</td>\n",
+       "      <td>10.302363</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1390</th>\n",
+       "      <td>0.001901</td>\n",
+       "      <td>0.017566</td>\n",
+       "      <td>brunch</td>\n",
+       "      <td>9.239931</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>6534</th>\n",
+       "      <td>0.001901</td>\n",
+       "      <td>0.016281</td>\n",
+       "      <td>organic</td>\n",
+       "      <td>8.563839</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4039</th>\n",
+       "      <td>0.001901</td>\n",
+       "      <td>0.016281</td>\n",
+       "      <td>gem</td>\n",
+       "      <td>8.563839</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>6761</th>\n",
+       "      <td>0.001901</td>\n",
+       "      <td>0.016281</td>\n",
+       "      <td>pasty</td>\n",
+       "      <td>8.563839</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1935</th>\n",
+       "      <td>0.001901</td>\n",
+       "      <td>0.015853</td>\n",
+       "      <td>classes</td>\n",
+       "      <td>8.338475</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "       rating_1  rating_5       tokens      ratio\n",
+       "3529   0.003802  0.077121    fantastic  20.282776\n",
+       "6849   0.005703  0.097258      perfect  17.052556\n",
+       "10469  0.001901  0.024422          yum  12.845758\n",
+       "6580   0.001901  0.019709  outstanding  10.366752\n",
+       "3560   0.013308  0.137104     favorite  10.302363\n",
+       "1390   0.001901  0.017566       brunch   9.239931\n",
+       "6534   0.001901  0.016281      organic   8.563839\n",
+       "4039   0.001901  0.016281          gem   8.563839\n",
+       "6761   0.001901  0.016281        pasty   8.563839\n",
+       "1935   0.001901  0.015853      classes   8.338475"
+      ]
+     },
+     "execution_count": 156,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#best ratings top 10 words\n",
+    "df_analysis.sort_values('ratio', ascending=False).head(10)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 157,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>rating_1</th>\n",
+       "      <th>rating_5</th>\n",
+       "      <th>tokens</th>\n",
+       "      <th>ratio</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>7622</th>\n",
+       "      <td>0.024715</td>\n",
+       "      <td>0.000428</td>\n",
+       "      <td>refused</td>\n",
+       "      <td>0.017336</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2881</th>\n",
+       "      <td>0.045627</td>\n",
+       "      <td>0.000857</td>\n",
+       "      <td>disgusting</td>\n",
+       "      <td>0.018780</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3642</th>\n",
+       "      <td>0.019011</td>\n",
+       "      <td>0.000428</td>\n",
+       "      <td>filthy</td>\n",
+       "      <td>0.022536</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4256</th>\n",
+       "      <td>0.015209</td>\n",
+       "      <td>0.000428</td>\n",
+       "      <td>gringos</td>\n",
+       "      <td>0.028171</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>9775</th>\n",
+       "      <td>0.015209</td>\n",
+       "      <td>0.000428</td>\n",
+       "      <td>unacceptable</td>\n",
+       "      <td>0.028171</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2861</th>\n",
+       "      <td>0.015209</td>\n",
+       "      <td>0.000428</td>\n",
+       "      <td>disaster</td>\n",
+       "      <td>0.028171</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>258</th>\n",
+       "      <td>0.015209</td>\n",
+       "      <td>0.000428</td>\n",
+       "      <td>acknowledge</td>\n",
+       "      <td>0.028171</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4890</th>\n",
+       "      <td>0.013308</td>\n",
+       "      <td>0.000428</td>\n",
+       "      <td>inedible</td>\n",
+       "      <td>0.032195</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>10468</th>\n",
+       "      <td>0.026616</td>\n",
+       "      <td>0.000857</td>\n",
+       "      <td>yuck</td>\n",
+       "      <td>0.032195</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>9760</th>\n",
+       "      <td>0.026616</td>\n",
+       "      <td>0.000857</td>\n",
+       "      <td>ugh</td>\n",
+       "      <td>0.032195</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "       rating_1  rating_5        tokens     ratio\n",
+       "7622   0.024715  0.000428       refused  0.017336\n",
+       "2881   0.045627  0.000857    disgusting  0.018780\n",
+       "3642   0.019011  0.000428        filthy  0.022536\n",
+       "4256   0.015209  0.000428       gringos  0.028171\n",
+       "9775   0.015209  0.000428  unacceptable  0.028171\n",
+       "2861   0.015209  0.000428      disaster  0.028171\n",
+       "258    0.015209  0.000428   acknowledge  0.028171\n",
+       "4890   0.013308  0.000428      inedible  0.032195\n",
+       "10468  0.026616  0.000857          yuck  0.032195\n",
+       "9760   0.026616  0.000857           ugh  0.032195"
+      ]
+     },
+     "execution_count": 157,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#worst ratings top 10 words\n",
+    "df_analysis.sort_values('ratio', ascending=True).head(10)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Task 9 (Challenge)\n",
+    "\n",
+    "Up to this point, we have framed this as a **binary classification problem** by only considering the 5-star and 1-star reviews. Now, let's repeat the model building process using all reviews, which makes this a **5-class classification problem**.\n",
+    "\n",
+    "Here are the steps:\n",
+    "\n",
+    "- Define X and y using the original DataFrame. (y should contain 5 different classes.)\n",
+    "- Split X and y into training and testing sets.\n",
+    "- Create document-term matrices using CountVectorizer.\n",
+    "- Calculate the testing accuracy of a Multinomial Naive Bayes model.\n",
+    "- Compare the testing accuracy with the null accuracy, and comment on the results.\n",
+    "- Print the confusion matrix, and comment on the results. (This [Stack Overflow answer](http://stackoverflow.com/a/30748053/1636598) explains how to read a multi-class confusion matrix.)\n",
+    "- Print the [classification report](http://scikit-learn.org/stable/modules/model_evaluation.html#classification-report), and comment on the results. If you are unfamiliar with the terminology it uses, research the terms, and then try to figure out how to calculate these metrics manually from the confusion matrix!"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 160,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "from sklearn.cross_validation import train_test_split\n",
+    "from sklearn.feature_extraction.text import CountVectorizer\n",
+    "from sklearn import metrics\n",
+    "from sklearn.pipeline import make_pipeline, Pipeline\n",
+    "from sklearn.naive_bayes import MultinomialNB\n",
+    "import pandas as pd"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 171,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "((7500,), (2500,), (10000,))"
+      ]
+     },
+     "execution_count": 171,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "yelp_data = pd.read_csv('../data/yelp.csv')\n",
+    "yelp_data.head(2)\n",
+    "\n",
+    "X = yelp_data.text\n",
+    "y = yelp_data.stars\n",
+    "\n",
+    "X_, X_t, y_, y_t = train_test_split(X, y, test_size= 0.25, random_state=1)\n",
+    "X_.shape, X_t.shape, X.shape"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 191,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "((7500, 25797), (2500, 25797))"
+      ]
+     },
+     "execution_count": 191,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "vect = CountVectorizer()\n",
+    "dtm = vect.fit_transform(X_)\n",
+    "dtm_t = vect.transform(X_t)\n",
+    "dtm.shape, dtm_t.shape"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 193,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": [
+    "nv = MultinomialNB()\n",
+    "nv.fit(dtm, y_)\n",
+    "y_res = nv.predict(dtm_t)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 199,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "accuracy score is  0.4712\n",
+      "null value is  4    0.3536\n",
+      "Name: stars, dtype: float64\n"
+     ]
+    }
+   ],
+   "source": [
+    "print('accuracy score is ', metrics.accuracy_score(y_t, y_res))\n",
+    "print('null value is ', y_t.value_counts().head(1)/y_t.shape)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 205,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "array([[ 55,  14,  24,  65,  27],\n",
+       "       [ 28,  16,  41, 122,  27],\n",
+       "       [  5,   7,  35, 281,  37],\n",
+       "       [  7,   0,  16, 629, 232],\n",
+       "       [  6,   4,   6, 373, 443]])"
+      ]
+     },
+     "execution_count": 205,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "c_m = metrics.confusion_matrix(y_t, y_res)\n",
+    "c_m"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 204,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "             precision    recall  f1-score   support\n",
+      "\n",
+      "          1       0.54      0.30      0.38       185\n",
+      "          2       0.39      0.07      0.12       234\n",
+      "          3       0.29      0.10      0.14       365\n",
+      "          4       0.43      0.71      0.53       884\n",
+      "          5       0.58      0.53      0.55       832\n",
+      "\n",
+      "avg / total       0.46      0.47      0.43      2500\n",
+      "\n"
+     ]
+    }
+   ],
+   "source": [
+    "print(metrics.classification_report(y_t, y_res))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 219,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "(0.57832898172323755, 0.53245192307692313)"
+      ]
+     },
+     "execution_count": 219,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#precision = diagonal count / sum(column)\n",
+    "#recall = diagonal count / sum(row)\n",
+    "precision_5 = c_m[4,4] / c_m[:,4].sum()\n",
+    "recall_5 = c_m[4,4] / c_m[4].sum()\n",
+    "precision_5, recall_5"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 223,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "(5, 25797)"
+      ]
+     },
+     "execution_count": 223,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "nv.feature_count_.shape"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.5.1"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 0
+}
